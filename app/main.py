@@ -1,9 +1,18 @@
+from enum import StrEnum, auto
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
 
-app = FastAPI()
+from .schemas import (
+    Shipment,
+    ShipmentCreate,
+    ShipmentRead,
+    ShipmentStatus,
+    ShipmentUpdate,
+)
+
+app = FastAPI(description="Scalar API documentation for the FastAPI application.")
 
 shipments = {
     12701: {"weight": 0.6, "content": "glassware", "status": "placed"},
@@ -22,8 +31,10 @@ def get_latest_shipment():
     return shipments[id]
 
 
-@app.get("/shipment", status_code=status.HTTP_200_OK)
-def get_shipment(id: int) -> dict[str, Any]:
+### Read a shipment by id
+@app.get("/shipment", response_model=ShipmentRead)
+def get_shipment(id: int):
+    # Check for shipment with given id
     if not id:
         id = max(shipments.keys())
         return shipments[id]
@@ -35,26 +46,22 @@ def get_shipment(id: int) -> dict[str, Any]:
     return shipments[id]
 
 
+### Create a new shipment with content and weight
 @app.post("/shipment")
-def submit_shipment(data: dict[str, Any]) -> dict[str, Any]:
-    content = data["content"]
-    weight = data["weight"]
-    if weight > 25:
-        raise HTTPException(
-            status_code=status.HTTP_406_NOT_ACCEPTABLE,
-            detail="Maximum weigjht limit : 25kgs",
-        )
-
+def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
+    # Create and assign shipment a new id
     new_id = max(shipments.keys()) + 1
+    # Add to shipments dictionary
 
     shipments[new_id] = {
-        "content": content,
-        "weight": weight,
+        **shipment.model_dump(),
         "status": "placed",
     }
+    # Return id for later use
     return {"id": new_id}
 
 
+### Update fields of a shipment
 @app.put("/shipment")
 def shipment_update(
     id: int, content: str, weight: float, status: str
@@ -72,15 +79,13 @@ def get_shipment_field(field: str, id: int) -> dict[str, Any]:
     return {field: shipments[id][field]}
 
 
-@app.patch("/shipment")
-def patch_shipment(id: int, body: dict[str, Any]):
-    shipment = shipments[id]
+### Update fields of a shipment
+@app.patch("/shipment", response_model=ShipmentRead)
+def patch_shipment(id: int, body: ShipmentUpdate):
     # Update the provide fields
+    shipments[id].update(body.model_dump(exclude_none=True))
 
-    shipment.update(body)
-
-    shipments[id] = shipment
-    return shipment
+    return shipments[id]
 
 
 @app.delete("/shipment")
