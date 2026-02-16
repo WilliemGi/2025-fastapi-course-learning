@@ -1,0 +1,9 @@
+[
+    {"id": 12701, "weight": 0.6, "content": "glassware", "status": "placed"},
+    {"id": 12702, "weight": 1.2, "content": "wooden table", "status": "in transit"},
+    {"id": 12703, "weight": 2.5, "content": "books", "status": "delivered"},
+    {"id": 12704, "weight": 0.3, "content": "electronics", "status": "placed"},
+    {"id": 12705, "weight": 3.8, "content": "furniture set", "status": "in transit"},
+    {"id": 12706, "weight": 1.1, "content": "clothing", "status": "delivered"},
+    {"id": 12707, "weight": 0.9, "content": "ceramics", "status": "placed"}
+]

@@ -4,6 +4,8 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
 
+from .database import Database
+from .database_origin import save, shipments
 from .schemas import (
     Shipment,
     ShipmentCreate,
@@ -14,15 +16,17 @@ from .schemas import (
 
 app = FastAPI(description="Scalar API documentation for the FastAPI application.")
 
-shipments = {
-    12701: {"weight": 0.6, "content": "glassware", "status": "placed"},
-    12702: {"weight": 1.2, "content": "wooden table", "status": "in transit"},
-    12703: {"weight": 2.5, "content": "books", "status": "delivered"},
-    12704: {"weight": 0.3, "content": "electronics", "status": "placed"},
-    12705: {"weight": 3.8, "content": "furniture set", "status": "in transit"},
-    12706: {"weight": 1.1, "content": "clothing", "status": "delivered"},
-    12707: {"weight": 0.9, "content": "ceramics", "status": "placed"},
-}
+# shipments = {
+#     12701: {"weight": 0.6, "content": "glassware", "status": "placed"},
+#     12702: {"weight": 1.2, "content": "wooden table", "status": "in transit"},
+#     12703: {"weight": 2.5, "content": "books", "status": "delivered"},
+#     12704: {"weight": 0.3, "content": "electronics", "status": "placed"},
+#     12705: {"weight": 3.8, "content": "furniture set", "status": "in transit"},
+#     12706: {"weight": 1.1, "content": "clothing", "status": "delivered"},
+#     12707: {"weight": 0.9, "content": "ceramics", "status": "placed"},
+# }
+
+db = Database
 
 
 @app.get("/shipment/latest")
@@ -35,28 +39,20 @@ def get_latest_shipment():
 @app.get("/shipment", response_model=ShipmentRead)
 def get_shipment(id: int):
     # Check for shipment with given id
-    if not id:
-        id = max(shipments.keys())
-        return shipments[id]
+    shipment = db.get(id)
 
-    if id not in shipments:
+    if shipment is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Given id is not exist"
         )
-    return shipments[id]
+    return shipments
 
 
 ### Create a new shipment with content and weight
 @app.post("/shipment")
 def submit_shipment(shipment: ShipmentCreate) -> dict[str, Any]:
     # Create and assign shipment a new id
-    new_id = max(shipments.keys()) + 1
-    # Add to shipments dictionary
-
-    shipments[new_id] = {
-        **shipment.model_dump(),
-        "status": "placed",
-    }
+    new_id = db.create(shipment)
     # Return id for later use
     return {"id": new_id}
 
@@ -81,16 +77,17 @@ def get_shipment_field(field: str, id: int) -> dict[str, Any]:
 
 ### Update fields of a shipment
 @app.patch("/shipment", response_model=ShipmentRead)
-def patch_shipment(id: int, body: ShipmentUpdate):
+def patch_shipment(id: int, shipment: ShipmentUpdate):
     # Update the provide fields
-    shipments[id].update(body.model_dump(exclude_none=True))
+    shipment = db.update(id, shipment)
+    return shipment
 
-    return shipments[id]
 
-
+### Delete a shipment by id
 @app.delete("/shipment")
 def delete_shipment(id: int) -> dict[str, Any]:
-    shipments.pop(id)
+    # Remove from datastore
+    db.delete(id)
     return {"detail": f"Shipment with id #{id} is deleted!"}
 
 
