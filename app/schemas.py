@@ -1,7 +1,7 @@
-from enum import StrEnum
 from random import randint
 
 from pydantic import BaseModel, Field
+from app.database.models import ShipmentStatus
 
 description = ("Weight of the shipment in kilograms(kg)",)
 
@@ -10,11 +10,7 @@ def random_destination():
     return randint(11000, 11999)
 
 
-class ShipmentStatus(StrEnum):
-    placed = "placed"
-    in_transit = "in_transit"
-    out_for_delivery = "out_for_delivery"
-    delivered = "delivered"
+
 
 
 class Shipment(BaseModel):

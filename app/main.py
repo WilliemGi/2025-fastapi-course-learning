@@ -1,8 +1,11 @@
+from contextlib import asynccontextmanager
 from enum import StrEnum, auto
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, status
 from scalar_fastapi import get_scalar_api_reference
+
+from app.database.session import create_db_tables
 
 from .database import Database
 from .database_origin import save, shipments
@@ -14,7 +17,17 @@ from .schemas import (
     ShipmentUpdate,
 )
 
-app = FastAPI(description="Scalar API documentation for the FastAPI application.")
+
+@asynccontextmanager
+async def lifespan_handler(app: FastAPI):
+    create_db_tables
+    # Code to run on startup
+    print("Server started...")
+    yield
+    print("...stoppped")
+
+
+app = FastAPI(lifespan=lifespan_handler)
 
 # shipments = {
 #     12701: {"weight": 0.6, "content": "glassware", "status": "placed"},
