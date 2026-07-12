@@ -8,7 +8,7 @@ from app.schemas import ShipmentCreate, ShipmentUpdate
 class Database:
     def connect_to_db(self):
         # Make the connection with database
-        self.conn = sqlite3.connect("sqlite.db", check_same_thread=False)
+        self.conn = sqlite3.connect("sqlite_new.db", check_same_thread=False)
         # Get cursor to execute queries and fetch data
         self.cur = self.conn.cursor()
         print("connected to the database")
@@ -91,16 +91,6 @@ class Database:
 
     def close(self):
         self.conn.close()
-
-    # def __enter__(self):
-    #     print("enter the context")
-    #     self.connect_to_db()
-    #     self.create_table()
-    #     return self
-
-    # def __exit__(self, *arg):
-    #     print("exiting the context")
-    #     self.close()
 
 
 # Usage

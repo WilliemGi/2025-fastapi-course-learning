@@ -1,6 +1,8 @@
+from datetime import datetime
 from random import randint
 
 from pydantic import BaseModel, Field
+
 from app.database.models import ShipmentStatus
 
 description = ("Weight of the shipment in kilograms(kg)",)
@@ -8,9 +10,6 @@ description = ("Weight of the shipment in kilograms(kg)",)
 
 def random_destination():
     return randint(11000, 11999)
-
-
-
 
 
 class Shipment(BaseModel):
@@ -33,6 +32,7 @@ class BaseShipment(BaseModel):
 
 class ShipmentRead(BaseShipment):
     status: ShipmentStatus
+    estimated_delivery: datetime
 
 
 class Order(BaseModel):
@@ -50,4 +50,6 @@ class ShipmentUpdate(BaseModel):
     content: str | None = Field(default=None)
     weight: float | None = Field(default=None, le=25)
     destination: int | None = Field(default=None)
-    status: ShipmentStatus | None
+    status: ShipmentStatus | None = Field(default=None)
+    estimated_delivery: datetime | None = Field(default=None)
+    # 呼叫方完全沒有傳遞 status 或 estimated_delivery參數，Pydantic 不會拋出缺失必填欄位的錯誤 (ValidationError)，而是自動將該欄位的值指派給預設的None
