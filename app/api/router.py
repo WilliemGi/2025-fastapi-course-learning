@@ -2,20 +2,18 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, status
 
-from app.api.schemas import shipments
 from app.api.schemas.shipments import ShipmentCreate, ShipmentUpdate
-from app.api.services.shipments import ShipmentService
 from app.database.models import Shipment
-from app.database.session import SessionDep
+from app.api.dependencies import ServiceDep
 
 router = APIRouter()
 
 
 ### Read a shipment by id
 @router.get("/shipment", response_model=Shipment)
-async def get_shipment(id: int, session: SessionDep):
+async def get_shipment(id: int, service: ServiceDep):
     # Check for shipment with given id
-    shipment = ShipmentService(session).get(id)
+    shipment = await service.get(id)
 
     if shipment is None:
         raise HTTPException(
@@ -27,16 +25,16 @@ async def get_shipment(id: int, session: SessionDep):
 
 ### Create a new shipment with content and weight
 @router.post("/shipment")
-async def submit_shipment(shipment: ShipmentCreate, session: SessionDep) -> Shipment:
+async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep) -> Shipment:
     # Create and assign shipment a new id
-    return await ShipmentService(session).add(shipment)
+    return await service.add(shipment)
 
 
 ### Update fields of a shipment
 # 部分更新 (Partial Update)，PATCH 請求
 # 客戶端只需要發送想要修改的欄位，未發送的即為None，後端邏輯可以藉此判斷「那些欄位不需要被更新」
 @router.patch("/shipment", response_model=Shipment)
-async def patch_shipment(id: int, shipment_update: ShipmentUpdate, session: SessionDep):
+async def patch_shipment(id: int, shipment_update: dict, service: ServiceDep):
 
     update = shipment_update.model_dump(exclude_none=True)
     # Update data with given fields
@@ -48,16 +46,16 @@ async def patch_shipment(id: int, shipment_update: ShipmentUpdate, session: Sess
             detail="No data provided for update",
         )
 
-    shipment = await ShipmentService(session).update(shipment_update)
+    shipment = await service.update(id, update)
 
     return shipment
 
 
 ### Delete a shipment by id
 @router.delete("/shipment")
-async def delete_shipment(id: int, session: SessionDep) -> dict[str, Any]:
+async def delete_shipment(id: int, service: ServiceDep) -> dict[str, Any]:
     # Remove from datastore
-    await ShipmentService(session).delete(id)
+    await service.delete(id)
 
     return {"detail": f"Shipment with id #{id} is deleted!"}
 

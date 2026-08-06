@@ -24,6 +24,7 @@ from .models import Shipment
 
 async def create_db_tables():
     async with engine.begin() as connection:
+        from app.api.schemas.shipments import Shipment
         await connection.run_sync(SQLModel.metadata.create_all)
 
 

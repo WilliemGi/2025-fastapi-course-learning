@@ -6,12 +6,10 @@ from scalar_fastapi import get_scalar_api_reference
 from app.api.router import router
 from app.database.session import create_db_tables
 
-from .database import Database
-
 
 @asynccontextmanager
 async def lifespan_handler(app: fastapi.FastAPI):
-    create_db_tables()
+    await create_db_tables()
     # Code to run on startup
     print("Server started...")
     yield
@@ -33,7 +31,6 @@ app = fastapi.FastAPI(
 #     12707: {"weight": 0.9, "content": "ceramics", "status": "placed"},
 # }
 
-db = Database
 
 app.include_router(router)
 

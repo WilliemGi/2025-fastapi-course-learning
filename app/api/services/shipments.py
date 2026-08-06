@@ -27,7 +27,7 @@ class ShipmentService:
 
         return new_shipment
 
-    async def update(self, shipment_update: ShipmentUpdate) -> Shipment:
+    async def update(self, id: int, shipment_update: ShipmentUpdate) -> Shipment:
         shipment = await self.get(id)
         shipment.sqlmodel_update(shipment_update)
 
