@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 import fastapi
 from scalar_fastapi import get_scalar_api_reference
 
-from app.api.router import router
+from app.api.router import master_router
 from app.database.session import create_db_tables
 
 
@@ -32,7 +32,7 @@ app = fastapi.FastAPI(
 # }
 
 
-app.include_router(router)
+app.include_router(master_router)
 
 
 # Scalar API Documentation
