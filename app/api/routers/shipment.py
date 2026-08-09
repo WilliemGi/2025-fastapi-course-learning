@@ -4,15 +4,15 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.database.models import Shipment
 
-from ..dependencies import ServiceDep
+from ..dependencies import ShipmentServiceDep
 from ..schemas.shipments import ShipmentCreate, ShipmentUpdate
 
-router = APIRouter()
+router = APIRouter(tags=["Shipment"])
 
 
 ### Read a shipment by id
 @router.get("/shipment", response_model=Shipment)
-async def get_shipment(id: int, service: ServiceDep):
+async def get_shipment(id: int, service: ShipmentServiceDep):
     # Check for shipment with given id
     shipment = await service.get(id)
 
@@ -26,7 +26,9 @@ async def get_shipment(id: int, service: ServiceDep):
 
 ### Create a new shipment with content and weight
 @router.post("/shipment")
-async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep) -> Shipment:
+async def submit_shipment(
+    shipment: ShipmentCreate, service: ShipmentServiceDep
+) -> Shipment:
     # Create and assign shipment a new id
     return await service.add(shipment)
 
@@ -35,7 +37,7 @@ async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep) -> Ship
 # 部分更新 (Partial Update)，PATCH 請求
 # 客戶端只需要發送想要修改的欄位，未發送的即為None，後端邏輯可以藉此判斷「那些欄位不需要被更新」
 @router.patch("/shipment", response_model=Shipment)
-async def patch_shipment(id: int, shipment_update: dict, service: ServiceDep):
+async def patch_shipment(id: int, shipment_update: dict, service: ShipmentServiceDep):
 
     update = shipment_update.model_dump(exclude_none=True)
     # Update data with given fields
@@ -54,9 +56,8 @@ async def patch_shipment(id: int, shipment_update: dict, service: ServiceDep):
 
 ### Delete a shipment by id
 @router.delete("/shipment")
-async def delete_shipment(id: int, service: ServiceDep) -> dict[str, Any]:
+async def delete_shipment(id: int, service: ShipmentServiceDep) -> dict[str, Any]:
     # Remove from datastore
     await service.delete(id)
 
-    return {"detail": f"Shipment with id #{id} is deleted!"}
     return {"detail": f"Shipment with id #{id} is deleted!"}

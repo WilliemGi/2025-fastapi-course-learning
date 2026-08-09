@@ -1,16 +1,32 @@
 from typing import Annotated
-# pyrefly: ignore [missing-import]
-from sqlalchemy.ext.asyncio import AsyncSession
+
 # pyrefly: ignore [missing-import]
 from fastapi import Depends
 
-from app.database.session import get_session
+# pyrefly: ignore [missing-import]
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.services.shipments import ShipmentService
+from app.database.session import get_session
 
+from .services.seller import SellerService
 
+# Asynchronous database session dep annotation
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
+
+# Shipment service dep
 def get_shipment_service(session: SessionDep):
     return ShipmentService(session)
 
-ServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
+
+# Seller service dep
+def get_seller_service(session: SessionDep):
+    return SellerService(session)
+
+
+# Shipment service dep annotation
+ShipmentServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
+
+# Seller service dep annotation
+SellerServiceDep = Annotated[SellerService, Depends(get_seller_service)]

@@ -7,5 +7,7 @@ sqlmodel==0.0.37
 uvicorn==0.38.0
 pydantic-settings
 passlib[bcrypt]
+asyncpg
+argon2-cffi
 
 # 要記得安裝 pip install "fastapi[standard]"
